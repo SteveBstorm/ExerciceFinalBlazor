@@ -1,0 +1,40 @@
+﻿@page "/addcategory"
+@using ExerciceFinal.Models
+@using ExerciceFinal.Services
+@inject ICategoryService _catService
+
+<RadzenCard>
+    <RadzenLabel Text="Nom catégorie"></RadzenLabel>
+    <RadzenTextBox @bind-Value="Name"></RadzenTextBox>
+    <RadzenButton Text="Valider" Click="Ajout" Icon="add_circle_outline" ButtonStyle="ButtonStyle.Success" />
+</RadzenCard>
+
+<ul>
+    @foreach(Category c in _catService.GetCategories())
+    {
+       <li>@c.Id : @c.Name  <button @onclick="()=> {_catService.DeleteCategory(c.Id);}">X</button></li> 
+    }
+</ul>
+
+@code {
+    public string Name { get; set; }
+
+    public List<Category> getList()
+    {
+        return _catService.GetCategories();
+    }
+
+    void Ajout()
+    {
+        _catService.AddCategory(Name);
+        Name = string.Empty;
+    }
+
+    //async Task pooling()
+    //{
+    //    Task.Delay(2000);
+    //    _catService.GetCategories();
+
+    //    pooling();
+    //}
+}

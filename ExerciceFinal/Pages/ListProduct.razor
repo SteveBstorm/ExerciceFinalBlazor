@@ -1,0 +1,220 @@
+﻿@page "/product"
+@using ExerciceFinal.Services
+@using ExerciceFinal.Models
+@inject IProductService _productService
+@inject ICategoryService _catService;
+<h3>ListProduct</h3>
+
+    @*<RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="Add New Order" Click="@InsertRow" Disabled=@(productToInsert != null) />*@
+    <RadzenDataGrid  AllowPaging="true" PageSize="5" AllowSorting="true" EditMode="DataGridEditMode.Single"
+                Data="@productList" TItem="Product">
+        <Columns>
+            <RadzenDataGridColumn TItem="Product" Property="Id" Title="ID" Width="120px" />
+            <RadzenDataGridColumn TItem="Product" Property="Name" Title="Customer" Width="280px"  >
+            @*<EditTemplate Context="newProduct">
+                    <RadzenTextBox @bind-Value="newProduct.Name" Style="width:100%" />
+                </EditTemplate>   *@
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Product" Property="Price" Title="Employee" Width="220px" >
+              @*  <EditTemplate Context="newProduct">
+                    <RadzenNumeric @bind-Value="newProduct.Price" Style="width:100%" />
+                </EditTemplate>   *@
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="Product" Property="catList.FirstOrDefault(x => x.Id == CategoryId).Name" Title="Order Date" Width="200px" >
+                @*<EditTemplate Context="newProduct">
+                    <RadzenDropDown AllowClear="true" TValue="string"  Class="w-100" 
+                            Data=@(catList.Select(x => x.Name).Distinct())/>
+                </EditTemplate>*@
+            </RadzenDataGridColumn>
+            @*<RadzenDataGridColumn>
+               @* <EditTemplate Context="newProduct">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(newProduct))">
+                    </RadzenButton>
+                    
+                </EditTemplate>
+            </RadzenDataGridColumn>*@
+               
+            @*<RadzenDataGridColumn TItem="Order" Property="Freight" Title="Freight">
+                <Template Context="order">
+                    @String.Format(new System.Globalization.CultureInfo("en-US"), "{0:C}", order.Freight)
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenNumeric @bind-Value="order.Freight" Style="width:100%" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Order" Property="ShipName" Title="Ship Name">
+                <EditTemplate Context="order">
+                    <RadzenTextBox @bind-Value="order.ShipName" Style="width:100%; display: block" Name="ShipName" />
+                    <RadzenRequiredValidator Text="ShipName is required" Component="ShipName" Popup="true" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Order" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="120px">
+                <Template Context="order">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(order))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(order))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(order))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Order" Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="60px">
+                <Template Context="order">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Size="ButtonSize.Small" Class="m-1" Click="@(args => DeleteRow(order))"  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Size="ButtonSize.Small" Class="m-1" Click="@(args => DeleteRow(order))">
+                    </RadzenButton>
+                </EditTemplate>*@
+          
+        </Columns>
+    </RadzenDataGrid>
+    <div class="form-group">
+        <label>Nom : </label>
+        <input class="form-control" type="text" @bind-value="newProduct.Name" />
+    </div
+    <div class="form-group">
+        <label>Price : </label>
+        <input class="form-control" type="number" @bind-value="newProduct.Price" />
+    </div>
+    <div class="form-group">
+        <label>Category : </label>
+        <select @bind="newProduct.CategoryId">
+            @foreach(Category c in catList)
+        {
+            <option value="@c.Id">@c.Name</option>
+        }
+        </select>
+    </div>
+    <div class="form-group">
+        <button class="btn btn-success" @onclick="addProduct">Valider</button>
+    </div>
+    
+    
+
+@code {
+    RadzenDataGrid<Product> productGrid;
+    IList<Product> products;
+    IEnumerable<Product> productList;
+    IEnumerable<Category> catList;
+
+    Product newProduct;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        newProduct = new Product();
+
+        productList = _productService.GetProducts();
+        catList = _catService.GetCategories();
+
+
+        // For demo purposes only
+        products = _productService.GetProducts().ToList();
+
+        // For production
+        //orders = dbContext.Orders.Include("Customer").Include("Employee");
+    }
+
+    void addProduct()
+    {
+        _productService.AddProduct(newProduct);
+        productList = _productService.GetProducts();
+        StateHasChanged();
+    }
+
+    //async Task EditRow(Order order)
+    //{
+    //    await ordersGrid.EditRow(order);
+    //}
+
+    //void OnUpdateRow(Order order)
+    //{
+    //    if (order == orderToInsert)
+    //    {
+    //        orderToInsert = null;
+    //    }
+
+    //    dbContext.Update(order);
+
+    //    // For demo purposes only
+    //    order.Customer = dbContext.Customers.Find(order.CustomerID);
+    //    order.Employee = dbContext.Employees.Find(order.EmployeeID);
+
+    //    // For production
+    //    //dbContext.SaveChanges();
+    //}
+
+    async Task SaveRow(Product order)
+    {
+        if (order == productToInsert)
+        {
+            productToInsert = null;
+        }
+    }
+
+    //    await ordersGrid.UpdateRow(order);
+    //}
+
+    //void CancelEdit(Order order)
+    //{
+    //    if (order == orderToInsert)
+    //    {
+    //        orderToInsert = null;
+    //    }
+
+    //    ordersGrid.CancelEditRow(order);
+
+    //    // For production
+    //    var orderEntry = dbContext.Entry(order);
+    //    if (orderEntry.State == EntityState.Modified)
+    //    {
+    //        orderEntry.CurrentValues.SetValues(orderEntry.OriginalValues);
+    //        orderEntry.State = EntityState.Unchanged;
+    //    }
+    //}
+
+    //async Task DeleteRow(Order order)
+    //{
+    //    if (order == orderToInsert)
+    //    {
+    //        orderToInsert = null;
+    //    }
+
+    //    if (orders.Contains(order))
+    //    {
+    //        dbContext.Remove<Order>(order);
+
+    //        // For demo purposes only
+    //        orders.Remove(order);
+
+    //        // For production
+    //        //dbContext.SaveChanges();
+
+    //        await ordersGrid.Reload();
+    //    }
+    //    else
+    //    {
+    //        ordersGrid.CancelEditRow(order);
+    //    }
+    //}
+
+    Product productToInsert;
+
+    async Task InsertRow()
+    {
+        productToInsert = new Product();
+        await productGrid.InsertRow(productToInsert);
+    }
+
+    void OnCreateRow(Product p)
+    {
+        _productService.AddProduct(p);
+
+    }
+}
